@@ -3,6 +3,7 @@ package org.gmetais.bleumagique
 import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProviders
 import android.os.Bundle
+import android.support.design.widget.Snackbar
 import android.support.v7.app.AppCompatActivity
 import android.view.View
 import android.widget.Toast
@@ -29,8 +30,9 @@ class ControlActivity : AppCompatActivity() {
 
     private fun onConnectionChanged(connected: Boolean) {
         button.isEnabled = connected
-        if (connected) Toast.makeText(this, "service ready", Toast.LENGTH_LONG).show()
+        Snackbar.make(textView, if (connected) "service ready" else "service unavailable", Snackbar.LENGTH_LONG).show()
     }
+
 
     private fun toggleButton(active: Boolean) {
         textView.text = if (active) "Allumé" else "Éteint"
