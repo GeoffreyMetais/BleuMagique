@@ -11,9 +11,9 @@ fun hexStringToByteArray(hexString: String): ByteArray {
     return data
 }
 
-fun byteArrayToHexString(byteArray: ByteArray): String {
+fun ByteArray.toHexString(): String {
     val builder = StringBuilder()
-    for (b in byteArray) builder.append(String.format("%02X", b))
+    for (b in this) builder.append(String.format("%02X", b))
     return builder.toString()
 }
 
