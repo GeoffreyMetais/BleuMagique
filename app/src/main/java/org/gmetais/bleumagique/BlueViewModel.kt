@@ -12,11 +12,11 @@ class BlueViewModel(appCtx: Context) : ViewModel() {
     internal var isOn = MutableLiveData<Boolean>()
     private val controller = BlueController(appCtx, isOn, connected)
 
-    fun toggle() = controller.send(if (isOn.value == true) "cc2433" else "cc2333")
+    fun toggle() = controller.toggle()
 
-    override fun onCleared() {
-        controller.clear()
-    }
+    override fun onCleared() = controller.clear()
+
+    fun setTemp(temp: Int) = controller.setTemp(temp)
 
     class Factory(private val appCtx: Context): ViewModelProvider.NewInstanceFactory() {
         override fun <T : ViewModel> create(modelClass: Class<T>): T {

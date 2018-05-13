@@ -12,7 +12,12 @@ class BlueController(appCtx: Context, private val isOn: MutableLiveData<Boolean>
     private var service : BluetoothGattService? = null
     private var characteristic : BluetoothGattCharacteristic? = null
 
-    internal fun send(command: String) = characteristic?.let { btGatt?.writeCharacteristic(it.apply { value = hexStringToByteArray(command) }) }
+    private fun send(command: String) = characteristic?.let {
+        btGatt?.writeCharacteristic(it.apply { value = hexStringToByteArray(command) })
+    }
+
+    fun toggle() = send(if (isOn.value == true) "cc2433" else "cc2333")
+    fun setTemp(temp: Int) = send("56FF0000${temp.toHexByte()}0faa")
 
     private val gattCb = object : BluetoothGattCallback() {
         override fun onConnectionStateChange(gatt: BluetoothGatt?, status: Int, newState: Int) {
@@ -27,10 +32,7 @@ class BlueController(appCtx: Context, private val isOn: MutableLiveData<Boolean>
         }
 
         override fun onCharacteristicWrite(gatt: BluetoothGatt?, characteristic: BluetoothGattCharacteristic?, status: Int) {
-            if (status == BluetoothGatt.GATT_SUCCESS) {
-                val on = isOn.value ?: false
-                isOn.postValue(!on)
-            }
+            if (status == BluetoothGatt.GATT_SUCCESS && isOn.value != true) isOn.postValue(true)
         }
     }
 
@@ -40,5 +42,5 @@ class BlueController(appCtx: Context, private val isOn: MutableLiveData<Boolean>
         btGatt = device?.connectGatt(appCtx, true, gattCb)
     }
 
-    fun clear() = btGatt?.close()
+    fun clear() = btGatt?.close() ?: Unit
 }
