@@ -19,7 +19,7 @@ class ControlActivity : AppCompatActivity(), SeekBar.OnSeekBarChangeListener by 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_control)
-        model.isOn.observe(this, Observer { toggleState(it!!) })
+        model.state.observe(this, Observer { updateState(it!!) })
         model.connected.observe(this, Observer { onConnectionChanged(it!!) })
         seekBar.setOnSeekBarChangeListener(this)
         // TODO
@@ -35,8 +35,9 @@ class ControlActivity : AppCompatActivity(), SeekBar.OnSeekBarChangeListener by 
         Snackbar.make(imageView, if (connected) "service ready" else "service unavailable", Snackbar.LENGTH_LONG).show()
     }
 
-    private fun toggleState(active: Boolean) {
-        imageView.setImageResource(if (active) R.drawable.ic_lightbulb_outline else R.drawable.ic_lightbulb_outline_off)
+    private fun updateState(state: LampState) {
+        imageView.setImageResource(if (state.on) R.drawable.ic_lightbulb_outline else R.drawable.ic_lightbulb_outline_off)
+        seekBar.setTemp(state.temp)
     }
 
     fun toggle(@Suppress("UNUSED_PARAMETER") v: View) {

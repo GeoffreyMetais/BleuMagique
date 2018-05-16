@@ -17,7 +17,9 @@ private const val MB_NOTIFY_SERVICE = "0000ffe0-0000-1000-8000-00805f9b34fb"
 private const val MB_NOTIFY_CHAR = "0000ffe4-0000-1000-8000-00805f9b34fb"
 private const val MB_DESCRIPTOR = "00002902-0000-1000-8000-00805f9b34fb"
 
-class BlueController(appCtx: Context, private val isOn: MutableLiveData<Boolean>, private val connected: MutableLiveData<Boolean>) {
+private const val BYTE_VALUE_ON = 35
+
+class BlueController(appCtx: Context, private val state: LiveState, private val connected: MutableLiveData<Boolean>) {
 
     private var btGatt : BluetoothGatt? = null
     private var btAdapter : BluetoothAdapter? = null
@@ -31,7 +33,7 @@ class BlueController(appCtx: Context, private val isOn: MutableLiveData<Boolean>
         Log.d(TAG, "send $command:  ${btGatt?.writeCharacteristic(it.apply { value = hexStringToByteArray(command) })}")
     }
 
-    fun toggle() = send(if (isOn.value == true) MB_OFF else MB_ON)
+    fun toggle() = send(if (state.value?.on == true) MB_OFF else MB_ON)
     fun setTemp(temp: Int) = send("56FF0000${temp.toHexByte()}0faa")
 
     private val gattCb = object : BluetoothGattCallback() {
@@ -61,15 +63,18 @@ class BlueController(appCtx: Context, private val isOn: MutableLiveData<Boolean>
         override fun onCharacteristicWrite(gatt: BluetoothGatt?, characteristic: BluetoothGattCharacteristic?, status: Int) {
             if (status == BluetoothGatt.GATT_SUCCESS) {
                 when(characteristic?.value?.toHexString()) {
-                    MB_OFF -> isOn.postValue(false)
-                    MB_ON -> isOn.postValue(true)
+                    MB_OFF -> state.update(false)
+                    MB_ON -> state.update(true)
                 }
             }
             gatt!!.readCharacteristic(characteristic!!)
         }
 
-        override fun onCharacteristicChanged(gatt: BluetoothGatt?, characteristic: BluetoothGattCharacteristic?) {
-            Log.d(TAG, "onCharacteristicChanged ${characteristic!!.uuid}, ${characteristic.value.toHexString()}")
+        override fun onCharacteristicChanged(gatt: BluetoothGatt, characteristic: BluetoothGattCharacteristic) {
+            val array = characteristic.value
+            val on = array[2].compareTo(BYTE_VALUE_ON) == 0
+            val temp = array[9].toInt()
+            state.update(on, temp)
         }
 
     }

@@ -24,3 +24,8 @@ object EmptySeekbarListener : SeekBar.OnSeekBarChangeListener {
     override fun onStartTrackingTouch(seekBar: SeekBar?){}
     override fun onStopTrackingTouch(seekBar: SeekBar?) {}
 }
+
+internal fun SeekBar.setTemp(temp: Int) {
+    if (android.os.Build.VERSION.SDK_INT >= 24) setProgress(temp, true)
+    else progress = temp
+}
