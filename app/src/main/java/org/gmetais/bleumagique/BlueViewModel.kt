@@ -11,7 +11,7 @@ typealias LiveState = MutableLiveData<LampState>
 
 class BlueViewModel(appCtx: Context) : ViewModel() {
     internal var connected = MutableLiveData<Boolean>()
-    internal var state = LiveState().apply { value = LampState(false, 255) }
+    internal var state = LiveState().apply { value = LampState(false, 0) }
     private val controller = BlueController(appCtx, state, connected)
 
     fun toggle() = controller.toggle()
@@ -30,6 +30,6 @@ class BlueViewModel(appCtx: Context) : ViewModel() {
 
 class LampState(var on: Boolean, var temp: Int)
 
-internal fun LiveState.update(on: Boolean = value?.on ?: false, temp: Int = value?.temp ?: 255) {
+internal fun LiveState.update(on: Boolean = value?.on ?: false, temp: Int = value?.temp ?: 0) {
     postValue(value?.apply { this.on = on; this.temp = temp })
 }
