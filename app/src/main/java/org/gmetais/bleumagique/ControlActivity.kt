@@ -37,7 +37,7 @@ class ControlActivity : AppCompatActivity(), SeekBar.OnSeekBarChangeListener by 
 
     private fun updateState(state: LampState) {
         imageView.setImageResource(if (state.on) R.drawable.ic_lightbulb_outline else R.drawable.ic_lightbulb_outline_off)
-        seekBar.setTemp(state.temp)
+        seekBar.setTemp(state.temp, this)
     }
 
     fun toggle(@Suppress("UNUSED_PARAMETER") v: View) {
