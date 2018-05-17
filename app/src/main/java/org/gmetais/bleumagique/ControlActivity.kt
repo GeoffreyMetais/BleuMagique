@@ -19,9 +19,10 @@ class ControlActivity : AppCompatActivity(), SeekBar.OnSeekBarChangeListener by 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_control)
+        imageView.isEnabled = false
+        seekBar.isEnabled = false
         model.state.observe(this, Observer { updateState(it!!) })
         model.connected.observe(this, Observer { onConnectionChanged(it!!) })
-        seekBar.setOnSeekBarChangeListener(this)
         // TODO
 //        if (btAdapter?.isEnabled != true) {
 //            val enableBtIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
@@ -33,6 +34,7 @@ class ControlActivity : AppCompatActivity(), SeekBar.OnSeekBarChangeListener by 
         imageView.isEnabled = connected
         seekBar.isEnabled = connected
         Snackbar.make(imageView, if (connected) "service ready" else "service unavailable", Snackbar.LENGTH_LONG).show()
+        imageView.setOnTouchListener(TouchHelper(this))
     }
 
     private fun updateState(state: LampState) {
@@ -40,9 +42,8 @@ class ControlActivity : AppCompatActivity(), SeekBar.OnSeekBarChangeListener by 
         seekBar.setTemp(state.temp, this)
     }
 
-    fun toggle(@Suppress("UNUSED_PARAMETER") v: View) {
-        model.toggle()
-    }
+    fun toggle(@Suppress("UNUSED_PARAMETER") v: View) = model.toggle()
+
     override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
         model.setTemp(progress)
     }
