@@ -1,5 +1,6 @@
 package org.gmetais.bleumagique
 
+import android.util.Log
 import android.widget.SeekBar
 
 fun hexStringToByteArray(hexString: String): ByteArray {
@@ -26,6 +27,7 @@ object EmptySeekbarListener : SeekBar.OnSeekBarChangeListener {
 }
 
 internal fun SeekBar.setTemp(temp: Int, listener: SeekBar.OnSeekBarChangeListener? = null) {
+    Log.d("setTemp", "temp: $temp", Exception())
     if (listener != null) setOnSeekBarChangeListener(null)
     if (android.os.Build.VERSION.SDK_INT >= 24) setProgress(temp, true)
     else progress = temp

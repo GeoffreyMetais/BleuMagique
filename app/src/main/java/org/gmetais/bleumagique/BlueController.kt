@@ -74,6 +74,7 @@ class BlueController(appCtx: Context, private val state: LiveState, private val 
             val array = characteristic.value
             val on = array[2].compareTo(BYTE_VALUE_ON) == 0
             val temp = array[9].toInt()
+            Log.d(TAG, "onCharacteristicChanged $temp")
             state.update(on, temp)
         }
 
