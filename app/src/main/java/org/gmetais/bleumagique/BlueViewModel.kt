@@ -4,6 +4,7 @@ import android.arch.lifecycle.MutableLiveData
 import android.arch.lifecycle.ViewModel
 import android.arch.lifecycle.ViewModelProvider
 import android.content.Context
+import android.util.Log
 
 private const val TAG = "BLE/BlueViewModel"
 
@@ -18,7 +19,10 @@ class BlueViewModel(appCtx: Context) : ViewModel() {
 
     override fun onCleared() = controller.clear()
 
-    fun setTemp(temp: Int) = controller.setTemp(temp)
+    fun setTemp(temp: Int) {
+        Log.d(TAG, "setTemp $temp")
+        controller.setTemp(temp)
+    }
 
     class Factory(private val appCtx: Context): ViewModelProvider.NewInstanceFactory() {
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
@@ -31,5 +35,6 @@ class BlueViewModel(appCtx: Context) : ViewModel() {
 class LampState(var on: Boolean, var temp: Int)
 
 internal fun LiveState.update(on: Boolean = value?.on ?: false, temp: Int = value?.temp ?: 0) {
+    Log.d(TAG, "update ${this.value?.on} -> $on,\n${this.value?.temp} -> $temp")
     postValue(value?.apply { this.on = on; this.temp = temp })
 }

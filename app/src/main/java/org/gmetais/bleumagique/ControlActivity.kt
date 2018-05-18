@@ -14,7 +14,7 @@ private const val REQUEST_ENABLE_BT = 9
 
 class ControlActivity : AppCompatActivity(), SeekBar.OnSeekBarChangeListener by EmptySeekbarListener {
 
-    private val model by lazy { ViewModelProviders.of(this, BlueViewModel.Factory(applicationContext)).get(BlueViewModel::class.java) }
+    internal val model by lazy { ViewModelProviders.of(this, BlueViewModel.Factory(applicationContext)).get(BlueViewModel::class.java) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
