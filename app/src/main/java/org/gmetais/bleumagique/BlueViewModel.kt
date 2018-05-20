@@ -20,7 +20,6 @@ class BlueViewModel(appCtx: Context) : ViewModel() {
     override fun onCleared() = controller.clear()
 
     fun setTemp(temp: Int) {
-        Log.d(TAG, "setTemp $temp")
         controller.setTemp(temp)
     }
 

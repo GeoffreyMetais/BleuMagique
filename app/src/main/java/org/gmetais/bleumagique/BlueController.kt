@@ -41,7 +41,11 @@ class BlueController(appCtx: Context, private val state: LiveState, private val 
     }
 
     fun toggle() = commander.offer(Power(state.value?.on != true))
-    fun setTemp(temp: Int) = commander.offer(Temp(max(0,min(temp, 255))))
+
+    fun setTemp(temp: Int) {
+        commander.offer(Temp(max(0, min(temp, 255))))
+        state.update(temp = temp)
+    }
 
     private val gattCb = object : BluetoothGattCallback() {
         override fun onConnectionStateChange(gatt: BluetoothGatt?, status: Int, newState: Int) {
@@ -72,7 +76,6 @@ class BlueController(appCtx: Context, private val state: LiveState, private val 
                 when(characteristic.value.toHexString()) {
                     MB_OFF -> state.update(false)
                     MB_ON -> state.update(true)
-                    else -> updateState(characteristic)
                 }
             }
             gatt.readCharacteristic(characteristic)
@@ -85,13 +88,6 @@ class BlueController(appCtx: Context, private val state: LiveState, private val 
             state.update(on, temp)
         }
 
-    }
-
-    private fun updateState(characteristic: BluetoothGattCharacteristic) {
-        val array = characteristic.value
-        if (array.size != 7) return
-        val temp = array[4].toUnsignedInt()
-        state.update(temp = temp)
     }
 
     init {
@@ -108,7 +104,7 @@ class BlueController(appCtx: Context, private val state: LiveState, private val 
                 is Power -> send(if (c.on) MB_ON else MB_OFF)
                 is Temp -> send("56000000${c.temp.toHexByte()}0Faa")
             }
-            delay(200, TimeUnit.MILLISECONDS)
+            delay(100, TimeUnit.MILLISECONDS)
         }
     }
 }
