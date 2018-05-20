@@ -19,6 +19,7 @@ private const val MB_CONTROL_CHAR = "0000ffe9-0000-1000-8000-00805f9b34fb"
 private const val MB_OFF = "CC2433"
 private const val MB_ON = "CC2333"
 private const val MB_DESCRIPTION_REQ = "EF0177"
+private const val MB_TIME_REQ = "121A1B21"
 
 private const val MB_NOTIFY_SERVICE = "0000ffe0-0000-1000-8000-00805f9b34fb"
 private const val MB_NOTIFY_CHAR = "0000ffe4-0000-1000-8000-00805f9b34fb"
@@ -67,8 +68,12 @@ class BlueController(appCtx: Context, private val state: LiveState, private val 
             }
         }
 
+        var start = true
         override fun onDescriptorWrite(gatt: BluetoothGatt, descriptor: BluetoothGattDescriptor, status: Int) {
-            send(MB_DESCRIPTION_REQ)
+            if (start) {
+                send(MB_DESCRIPTION_REQ)
+                start = false
+            } else send(MB_TIME_REQ)
         }
 
         override fun onCharacteristicWrite(gatt: BluetoothGatt, characteristic: BluetoothGattCharacteristic, status: Int) {
@@ -83,9 +88,20 @@ class BlueController(appCtx: Context, private val state: LiveState, private val 
 
         override fun onCharacteristicChanged(gatt: BluetoothGatt, characteristic: BluetoothGattCharacteristic) {
             val array = characteristic.value
-            val on = array[2].compareTo(BYTE_VALUE_ON) == 0
-            val temp = array[9].toUnsignedInt()
-            state.update(on, temp)
+            if (array.size == 12 && array[0].compareTo(0x66) == 0/* && array[11].compareTo(0x99) == 0*/) {
+                val on = array[2].compareTo(BYTE_VALUE_ON) == 0
+                val temp = array[9].toUnsignedInt()
+                state.update(on, temp)
+            } else if (array.size == 11 && array[0].compareTo(0x13) == 0 && array[10].compareTo(0x31) == 0) {
+                val year = 2000 + array[2].toUnsignedInt()
+                val month = array[3].toUnsignedInt()
+                val day = array[4].toUnsignedInt()
+                val hour = array[5].toUnsignedInt()
+                val minute = array[6].toUnsignedInt()
+                val second = array[7].toUnsignedInt()
+                val dayOfWeek = array[8].toUnsignedInt()
+                Log.d(TAG, "$hour:$minute:$second, $day/$month/$year\n day of week: $dayOfWeek")
+            }
         }
 
     }
