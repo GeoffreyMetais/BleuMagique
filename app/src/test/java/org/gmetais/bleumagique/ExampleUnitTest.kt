@@ -14,4 +14,13 @@ class ExampleUnitTest {
     fun addition_isCorrect() {
         assertEquals(4, 2 + 2)
     }
+
+    @Test
+    fun bytConversion() {
+        assertEquals(16, "10".toByteArray()[0].toInt())
+        assertEquals(127, "7F".toByteArray()[0].toUnsignedInt())
+        assertEquals(128, "80".toByteArray()[0].toUnsignedInt())
+        assertEquals(129, "81".toByteArray()[0].toUnsignedInt())
+        assertEquals(255, "FF".toByteArray()[0].toUnsignedInt())
+    }
 }
