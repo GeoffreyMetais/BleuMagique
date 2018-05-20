@@ -1,13 +1,12 @@
 package org.gmetais.bleumagique
 
-import android.util.Log
 import android.widget.SeekBar
 
-fun hexStringToByteArray(hexString: String): ByteArray {
-    val length = hexString.length
+fun String.toByteArray(): ByteArray {
+    val length = length
     val data = ByteArray(length / 2)
     for (i in 0 until length step 2) {
-        data[i / 2] = ((Character.digit(hexString[i], 16) shl 4) + Character.digit(hexString[i + 1], 16)).toByte()
+        data[i / 2] = ((Character.digit(this[i], 16) shl 4) + Character.digit(this[i + 1], 16)).toByte()
     }
     return data
 }
@@ -18,6 +17,8 @@ fun ByteArray.toHexString(): String {
     return builder.toString()
 }
 
+fun Byte.toUnsignedInt() = toInt() and 0xFF
+
 fun Int.toHexByte(): String = Integer.toHexString(this).let { if (this < 16) "0$it" else it}
 
 object EmptySeekbarListener : SeekBar.OnSeekBarChangeListener {
@@ -27,7 +28,6 @@ object EmptySeekbarListener : SeekBar.OnSeekBarChangeListener {
 }
 
 internal fun SeekBar.setTemp(temp: Int, listener: SeekBar.OnSeekBarChangeListener? = null) {
-    Log.d("setTemp", "temp: $temp", Exception())
     if (listener != null) setOnSeekBarChangeListener(null)
     if (android.os.Build.VERSION.SDK_INT >= 24) setProgress(temp, true)
     else progress = temp

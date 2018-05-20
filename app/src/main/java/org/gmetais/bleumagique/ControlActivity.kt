@@ -15,6 +15,7 @@ private const val REQUEST_ENABLE_BT = 9
 class ControlActivity : AppCompatActivity(), SeekBar.OnSeekBarChangeListener by EmptySeekbarListener {
 
     internal val model by lazy { ViewModelProviders.of(this, BlueViewModel.Factory(applicationContext)).get(BlueViewModel::class.java) }
+    private var power = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -38,8 +39,11 @@ class ControlActivity : AppCompatActivity(), SeekBar.OnSeekBarChangeListener by 
     }
 
     private fun updateState(state: LampState) {
-        imageView.setImageResource(if (state.on) R.drawable.ic_lightbulb_outline else R.drawable.ic_lightbulb_outline_off)
-        seekBar.setTemp(state.temp, this)
+        if (state.on != power) {
+            imageView.setImageResource(if (state.on) R.drawable.ic_lightbulb_outline else R.drawable.ic_lightbulb_outline_off)
+            power = state.on
+        }
+        if (state.temp != seekBar.progress) seekBar.setTemp(state.temp, this)
     }
 
     fun toggle(@Suppress("UNUSED_PARAMETER") v: View) = model.toggle()
