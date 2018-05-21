@@ -4,10 +4,12 @@ import android.arch.lifecycle.MutableLiveData
 import android.bluetooth.*
 import android.content.Context
 import android.util.Log
+import kotlinx.coroutines.experimental.Unconfined
 import kotlinx.coroutines.experimental.android.UI
 import kotlinx.coroutines.experimental.channels.Channel
 import kotlinx.coroutines.experimental.channels.actor
 import kotlinx.coroutines.experimental.delay
+import kotlinx.coroutines.experimental.launch
 import java.util.*
 import java.util.concurrent.TimeUnit
 import kotlin.math.max
@@ -18,8 +20,11 @@ private const val MB_CONTROL_SERVICE = "0000ffe5-0000-1000-8000-00805f9b34fb"
 private const val MB_CONTROL_CHAR = "0000ffe9-0000-1000-8000-00805f9b34fb"
 private const val MB_OFF = "CC2433"
 private const val MB_ON = "CC2333"
+
 private const val MB_DESCRIPTION_REQ = "EF0177"
 private const val MB_TIME_REQ = "121A1B21"
+private val MB_REQ_ARRAY = arrayListOf(MB_DESCRIPTION_REQ, MB_TIME_REQ)
+private var reqCount = 0
 
 private const val MB_NOTIFY_SERVICE = "0000ffe0-0000-1000-8000-00805f9b34fb"
 private const val MB_NOTIFY_CHAR = "0000ffe4-0000-1000-8000-00805f9b34fb"
@@ -36,10 +41,7 @@ class BlueController(appCtx: Context, private val state: LiveState, private val 
     private var notifyCharacteristic : BluetoothGattCharacteristic? = null
     private var ctrlCharacteristic : BluetoothGattCharacteristic? = null
 
-    private fun send(command: String) = ctrlCharacteristic?.let {
-        it.writeType = BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT
-        Log.d(TAG, "send $command:  ${btGatt?.writeCharacteristic(it.apply { value = command.toByteArray() })}")
-    }
+    fun request(req: String) = commander.offer(Request(req))
 
     fun toggle() = commander.offer(Power(state.value?.on != true))
 
@@ -49,9 +51,13 @@ class BlueController(appCtx: Context, private val state: LiveState, private val 
     }
 
     private val gattCb = object : BluetoothGattCallback() {
-        override fun onConnectionStateChange(gatt: BluetoothGatt?, status: Int, newState: Int) {
-            if (newState == BluetoothProfile.STATE_CONNECTED && btGatt?.discoverServices() == true)
-            else connected.postValue(false)
+        override fun onConnectionStateChange(gatt: BluetoothGatt, status: Int, newState: Int) {
+            if (newState == BluetoothProfile.STATE_CONNECTED && gatt.discoverServices())
+            else {
+                connected.postValue(false)
+                return
+            }
+            state.value?.name = gatt.device.name
         }
 
         override fun onServicesDiscovered(gatt: BluetoothGatt, status: Int) {
@@ -68,12 +74,8 @@ class BlueController(appCtx: Context, private val state: LiveState, private val 
             }
         }
 
-        var start = true
         override fun onDescriptorWrite(gatt: BluetoothGatt, descriptor: BluetoothGattDescriptor, status: Int) {
-            if (start) {
-                send(MB_DESCRIPTION_REQ)
-                start = false
-            } else send(MB_TIME_REQ)
+            request(MB_REQ_ARRAY[reqCount])
         }
 
         override fun onCharacteristicWrite(gatt: BluetoothGatt, characteristic: BluetoothGattCharacteristic, status: Int) {
@@ -90,18 +92,19 @@ class BlueController(appCtx: Context, private val state: LiveState, private val 
             val array = characteristic.value
             if (array.size == 12 && array[0].compareTo(0x66) == 0/* && array[11].compareTo(0x99) == 0*/) {
                 val on = array[2].compareTo(BYTE_VALUE_ON) == 0
-                val temp = array[9].toUnsignedInt()
+                val temp = array[9].toUInt()
                 state.update(on, temp)
             } else if (array.size == 11 && array[0].compareTo(0x13) == 0 && array[10].compareTo(0x31) == 0) {
-                val year = 2000 + array[2].toUnsignedInt()
-                val month = array[3].toUnsignedInt()
-                val day = array[4].toUnsignedInt()
-                val hour = array[5].toUnsignedInt()
-                val minute = array[6].toUnsignedInt()
-                val second = array[7].toUnsignedInt()
-                val dayOfWeek = array[8].toUnsignedInt()
+                val year = 2000 + array[2].toUInt()
+                val month = array[3].toUInt()
+                val day = array[4].toUInt()
+                val hour = array[5].toUInt()
+                val minute = array[6].toUInt()
+                val second = array[7].toUInt()
+                val dayOfWeek = array[8].toUInt()
                 Log.d(TAG, "$hour:$minute:$second, $day/$month/$year\n day of week: $dayOfWeek")
             }
+            if (++reqCount < MB_REQ_ARRAY.size) request(MB_REQ_ARRAY[reqCount])
         }
 
     }
@@ -117,14 +120,21 @@ class BlueController(appCtx: Context, private val state: LiveState, private val 
     private val commander = actor<Command>(UI, Channel.CONFLATED) {
         for (c in channel) {
             when (c) {
+                is Request -> send(c.req)
                 is Power -> send(if (c.on) MB_ON else MB_OFF)
                 is Temp -> send("56000000${c.temp.toHexByte()}0Faa")
             }
             delay(100, TimeUnit.MILLISECONDS)
         }
     }
+
+    private fun send(command: String) = ctrlCharacteristic?.let {
+        val succes = btGatt?.writeCharacteristic(it.apply { value = command.toByteArray() })
+        Log.d(TAG, "send $command:  $succes")
+    }
 }
 
 sealed class Command
 class Power(val on: Boolean) : Command()
 class Temp(val temp: Int) : Command()
+class Request(val req: String) : Command()

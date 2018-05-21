@@ -17,7 +17,7 @@ fun ByteArray.toHexString(): String {
     return builder.toString()
 }
 
-fun Byte.toUnsignedInt() = toInt() and 0xFF
+fun Byte.toUInt() = toInt() and 0xFF
 
 fun Int.toHexByte(): String = Integer.toHexString(this).let { if (this < 16) "0$it" else it}
 

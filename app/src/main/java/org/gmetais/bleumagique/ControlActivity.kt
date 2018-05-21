@@ -44,6 +44,7 @@ class ControlActivity : AppCompatActivity(), SeekBar.OnSeekBarChangeListener by 
             power = state.on
         }
         if (state.temp != seekBar.progress) seekBar.setTemp(state.temp, this)
+        title = state.name
     }
 
     fun toggle(@Suppress("UNUSED_PARAMETER") v: View) = model.toggle()
