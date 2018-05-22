@@ -43,4 +43,6 @@ dependencies {
 
     implementation "android.arch.lifecycle:extensions:$lifecycle_version"
     implementation "android.arch.lifecycle:common-java8:$lifecycle_version"
+
+    implementation 'com.github.QuadFlask:colorpicker:0.0.13'
 }

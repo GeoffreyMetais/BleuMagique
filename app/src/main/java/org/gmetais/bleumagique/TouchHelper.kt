@@ -1,18 +1,21 @@
 package org.gmetais.bleumagique
 
+import android.graphics.Color
 import android.support.v4.view.GestureDetectorCompat
 import android.util.DisplayMetrics
-import android.util.Log
 import android.view.GestureDetector
 import android.view.MotionEvent
 import android.view.View
+import com.flask.colorpicker.ColorPickerView
+import com.flask.colorpicker.builder.ColorPickerDialogBuilder
 import kotlinx.android.synthetic.main.activity_control.*
 import kotlinx.coroutines.experimental.android.UI
 import kotlinx.coroutines.experimental.channels.Channel
 import kotlinx.coroutines.experimental.channels.actor
-import java.util.concurrent.ConcurrentHashMap
 import kotlin.math.max
 import kotlin.math.min
+
+
 
 class TouchHelper(private val activity: ControlActivity) : View.OnTouchListener {
     private var lastY = -1f
@@ -33,6 +36,20 @@ class TouchHelper(private val activity: ControlActivity) : View.OnTouchListener 
         override fun onSingleTapConfirmed(e: MotionEvent?): Boolean {
             activity.toggle(activity.imageView)
             return true
+        }
+
+        override fun onLongPress(e: MotionEvent) {
+            ColorPickerDialogBuilder
+                    .with(activity)
+                    .setTitle("Choose color")
+                    .initialColor(Color.WHITE)
+                    .wheelType(ColorPickerView.WHEEL_TYPE.FLOWER)
+                    .density(12)
+//                    .setOnColorSelectedListener { selectedColor -> Snackbar.make(activity.window.decorView, "onColorSelected: 0x${Integer.toHexString(selectedColor)}", Snackbar.LENGTH_LONG).show() }
+                    .setPositiveButton("ok") { dialog, selectedColor, allColors -> activity.setColor(selectedColor) }
+                    .setNegativeButton("cancel") { dialog, which -> dialog.dismiss()}
+                    .build()
+                    .show()
         }
     })
 

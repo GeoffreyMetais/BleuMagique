@@ -52,4 +52,9 @@ class ControlActivity : AppCompatActivity(), SeekBar.OnSeekBarChangeListener by 
     override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
         model.setTemp(progress)
     }
+
+    fun setColor(selectedColor: Int) {
+        Snackbar.make(imageView, "color ${Integer.toHexString(selectedColor)}", Snackbar.LENGTH_LONG).show()
+        imageView.setColorFilter(selectedColor, android.graphics.PorterDuff.Mode.SRC_IN)
+    }
 }
