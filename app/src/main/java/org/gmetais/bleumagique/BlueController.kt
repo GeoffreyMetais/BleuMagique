@@ -4,12 +4,10 @@ import android.arch.lifecycle.MutableLiveData
 import android.bluetooth.*
 import android.content.Context
 import android.util.Log
-import kotlinx.coroutines.experimental.Unconfined
 import kotlinx.coroutines.experimental.android.UI
 import kotlinx.coroutines.experimental.channels.Channel
 import kotlinx.coroutines.experimental.channels.actor
 import kotlinx.coroutines.experimental.delay
-import kotlinx.coroutines.experimental.launch
 import java.util.*
 import java.util.concurrent.TimeUnit
 import kotlin.math.max
@@ -48,6 +46,18 @@ class BlueController(appCtx: Context, private val state: LiveState, private val 
     fun setTemp(temp: Int) {
         commander.offer(Temp(max(0, min(temp, 255))))
         state.update(temp = temp)
+    }
+
+    fun setTime() {
+        val calendar = Calendar.getInstance()
+        val dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK).toHexByte()
+        val year = (calendar.get(Calendar.YEAR) - 2000).toHexByte()
+        val month = calendar.get(Calendar.MONTH).toHexByte()
+        val day = calendar.get(Calendar.DAY_OF_MONTH).toHexByte()
+        val hour = calendar.get(Calendar.HOUR_OF_DAY).toHexByte()
+        val minute = calendar.get(Calendar.MINUTE).toHexByte()
+        val second = calendar.get(Calendar.SECOND).toHexByte()
+        request("1014$year$month$day$hour$minute$second${dayOfWeek}0001")
     }
 
     private val gattCb = object : BluetoothGattCallback() {
@@ -103,6 +113,7 @@ class BlueController(appCtx: Context, private val state: LiveState, private val 
                 val second = array[7].toUInt()
                 val dayOfWeek = array[8].toUInt()
                 Log.d(TAG, "$hour:$minute:$second, $day/$month/$year\n day of week: $dayOfWeek")
+                setTime()
             }
             if (++reqCount < MB_REQ_ARRAY.size) request(MB_REQ_ARRAY[reqCount])
         }
