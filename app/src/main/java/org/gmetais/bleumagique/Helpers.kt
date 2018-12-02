@@ -1,6 +1,9 @@
 package org.gmetais.bleumagique
 
 import android.widget.SeekBar
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 
 fun String.toByteArray(): ByteArray {
     val length = length
@@ -35,3 +38,8 @@ internal fun SeekBar.setTemp(temp: Int, listener: SeekBar.OnSeekBarChangeListene
 }
 
 internal fun SeekBar.changeTemp(delta: Int) = setTemp(progress+delta)
+
+object AppScope : CoroutineScope {
+    @ExperimentalCoroutinesApi
+    override val coroutineContext = Dispatchers.Main.immediate
+}

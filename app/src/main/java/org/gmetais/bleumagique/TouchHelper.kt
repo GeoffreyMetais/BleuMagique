@@ -9,17 +9,18 @@ import android.view.View
 import com.flask.colorpicker.ColorPickerView
 import com.flask.colorpicker.builder.ColorPickerDialogBuilder
 import kotlinx.android.synthetic.main.activity_control.*
-import kotlinx.coroutines.experimental.android.UI
-import kotlinx.coroutines.experimental.channels.Channel
-import kotlinx.coroutines.experimental.channels.actor
+import kotlinx.coroutines.ObsoleteCoroutinesApi
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.channels.actor
 import kotlin.math.max
 import kotlin.math.min
 
 
 
+@ObsoleteCoroutinesApi
 class TouchHelper(private val activity: ControlActivity) : View.OnTouchListener {
     private var lastY = -1f
-    private val actor = actor<Int>(UI, Channel.CONFLATED) {
+    private val actor = AppScope.actor<Int>(capacity = Channel.CONFLATED) {
         for (delta in channel) {
             val newTemp = min(max(2, activity.seekBar.progress + delta), 250)
             activity.model.setTemp(temp = newTemp)
@@ -46,8 +47,8 @@ class TouchHelper(private val activity: ControlActivity) : View.OnTouchListener 
                     .wheelType(ColorPickerView.WHEEL_TYPE.FLOWER)
                     .density(12)
 //                    .setOnColorSelectedListener { selectedColor -> Snackbar.make(activity.window.decorView, "onColorSelected: 0x${Integer.toHexString(selectedColor)}", Snackbar.LENGTH_LONG).show() }
-                    .setPositiveButton("ok") { dialog, selectedColor, allColors -> activity.setColor(selectedColor) }
-                    .setNegativeButton("cancel") { dialog, which -> dialog.dismiss()}
+                    .setPositiveButton("ok") { _, selectedColor, _ -> activity.setColor(selectedColor) }
+                    .setNegativeButton("cancel") { dialog, _ -> dialog.dismiss()}
                     .build()
                     .show()
         }

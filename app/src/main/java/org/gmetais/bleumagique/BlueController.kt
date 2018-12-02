@@ -4,12 +4,11 @@ import android.arch.lifecycle.MutableLiveData
 import android.bluetooth.*
 import android.content.Context
 import android.util.Log
-import kotlinx.coroutines.experimental.android.UI
-import kotlinx.coroutines.experimental.channels.Channel
-import kotlinx.coroutines.experimental.channels.actor
-import kotlinx.coroutines.experimental.delay
+import kotlinx.coroutines.ObsoleteCoroutinesApi
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.channels.actor
+import kotlinx.coroutines.delay
 import java.util.*
-import java.util.concurrent.TimeUnit
 import kotlin.math.max
 import kotlin.math.min
 
@@ -30,6 +29,7 @@ private const val MB_DESCRIPTOR = "00002902-0000-1000-8000-00805f9b34fb"
 
 private const val BYTE_VALUE_ON = 35
 
+@ObsoleteCoroutinesApi
 class BlueController(appCtx: Context, private val state: LiveState, private val connected: MutableLiveData<Boolean>) {
 
     private var btGatt : BluetoothGatt? = null
@@ -128,14 +128,14 @@ class BlueController(appCtx: Context, private val state: LiveState, private val 
 
     fun clear() = btGatt?.close() ?: Unit
 
-    private val commander = actor<Command>(UI, Channel.CONFLATED) {
+    private val commander = AppScope.actor<Command>(capacity = Channel.CONFLATED) {
         for (c in channel) {
             when (c) {
                 is Request -> send(c.req)
                 is Power -> send(if (c.on) MB_ON else MB_OFF)
                 is Temp -> send("56000000${c.temp.toHexByte()}0Faa")
             }
-            delay(100, TimeUnit.MILLISECONDS)
+            delay(100_000L)
         }
     }
 
