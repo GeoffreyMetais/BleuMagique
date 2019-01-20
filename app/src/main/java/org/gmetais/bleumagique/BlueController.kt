@@ -4,11 +4,11 @@ import androidx.lifecycle.MutableLiveData
 import android.bluetooth.*
 import android.content.Context
 import android.util.Log
-import kotlinx.coroutines.ObsoleteCoroutinesApi
+import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.actor
-import kotlinx.coroutines.delay
 import java.util.*
+import kotlin.coroutines.CoroutineContext
 import kotlin.math.max
 import kotlin.math.min
 
@@ -30,7 +30,8 @@ private const val MB_DESCRIPTOR = "00002902-0000-1000-8000-00805f9b34fb"
 private const val BYTE_VALUE_ON = 35
 
 @ObsoleteCoroutinesApi
-class BlueController(appCtx: Context, private val state: LiveState, private val connected: MutableLiveData<Boolean>) {
+class BlueController(appCtx: Context, private val state: LiveState, private val connected: MutableLiveData<Boolean>) : CoroutineScope {
+    override val coroutineContext = Dispatchers.Main + SupervisorJob()
 
     private var btGatt : BluetoothGatt? = null
     private var btAdapter : BluetoothAdapter? = null
@@ -128,20 +129,18 @@ class BlueController(appCtx: Context, private val state: LiveState, private val 
 
     fun clear() = btGatt?.close() ?: Unit
 
-    private val commander = AppScope.actor<Command>(capacity = Channel.CONFLATED) {
+    private val commander = actor<Command>(capacity = Channel.CONFLATED) {
         for (c in channel) {
             when (c) {
                 is Request -> send(c.req)
                 is Power -> send(if (c.on) MB_ON else MB_OFF)
                 is Temp -> send("56000000${c.temp.toHexByte()}0Faa")
             }
-            delay(100_000L)
         }
     }
 
     private fun send(command: String) = ctrlCharacteristic?.let {
         val succes = btGatt?.writeCharacteristic(it.apply { value = command.toByteArray() })
-        Log.d(TAG, "send $command:  $succes")
     }
 }
 
