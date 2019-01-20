@@ -53,7 +53,7 @@ class ControlActivity : AppCompatActivity(), SeekBar.OnSeekBarChangeListener by 
     fun toggle(@Suppress("UNUSED_PARAMETER") v: View) = model.toggle()
 
     override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-        model.setTemp(progress)
+        if (fromUser) model.setTemp(progress)
     }
 
     fun setColor(selectedColor: Int) {
