@@ -8,6 +8,7 @@ import android.support.v7.app.AppCompatActivity
 import android.view.View
 import android.widget.SeekBar
 import kotlinx.android.synthetic.main.activity_control.*
+import org.gmetais.bleumagique.R.id.imageView
 
 private const val TAG = "BLE/ControlActivity"
 private const val REQUEST_ENABLE_BT = 9

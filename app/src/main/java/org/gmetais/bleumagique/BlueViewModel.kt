@@ -1,15 +1,13 @@
 package org.gmetais.bleumagique
 
-import android.arch.lifecycle.MutableLiveData
-import android.arch.lifecycle.ViewModel
-import android.arch.lifecycle.ViewModelProvider
 import android.content.Context
-import android.util.Log
+import kotlinx.coroutines.ObsoleteCoroutinesApi
 
 private const val TAG = "BLE/BlueViewModel"
 
 typealias LiveState = MutableLiveData<LampState>
 
+@ObsoleteCoroutinesApi
 class BlueViewModel(appCtx: Context) : ViewModel() {
     internal var connected = MutableLiveData<Boolean>()
     internal var state = LiveState().apply { value = LampState(on = false, temp =  0) }
