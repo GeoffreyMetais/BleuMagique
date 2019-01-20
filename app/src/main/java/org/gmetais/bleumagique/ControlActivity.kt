@@ -1,18 +1,20 @@
 package org.gmetais.bleumagique
 
-import android.arch.lifecycle.Observer
-import android.arch.lifecycle.ViewModelProviders
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProviders
 import android.os.Bundle
-import android.support.design.widget.Snackbar
-import android.support.v7.app.AppCompatActivity
+import com.google.android.material.snackbar.Snackbar
+import androidx.appcompat.app.AppCompatActivity
 import android.view.View
 import android.widget.SeekBar
 import kotlinx.android.synthetic.main.activity_control.*
+import kotlinx.coroutines.ObsoleteCoroutinesApi
 import org.gmetais.bleumagique.R.id.imageView
 
 private const val TAG = "BLE/ControlActivity"
 private const val REQUEST_ENABLE_BT = 9
 
+@ObsoleteCoroutinesApi
 class ControlActivity : AppCompatActivity(), SeekBar.OnSeekBarChangeListener by EmptySeekbarListener {
 
     internal val model by lazy { ViewModelProviders.of(this, BlueViewModel.Factory(applicationContext)).get(BlueViewModel::class.java) }

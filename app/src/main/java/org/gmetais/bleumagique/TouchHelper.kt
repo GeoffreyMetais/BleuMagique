@@ -1,7 +1,7 @@
 package org.gmetais.bleumagique
 
 import android.graphics.Color
-import android.support.v4.view.GestureDetectorCompat
+import androidx.core.view.GestureDetectorCompat
 import android.util.DisplayMetrics
 import android.view.GestureDetector
 import android.view.MotionEvent

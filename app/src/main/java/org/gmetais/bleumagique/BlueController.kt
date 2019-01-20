@@ -1,6 +1,6 @@
 package org.gmetais.bleumagique
 
-import android.arch.lifecycle.MutableLiveData
+import androidx.lifecycle.MutableLiveData
 import android.bluetooth.*
 import android.content.Context
 import android.util.Log

@@ -1,6 +1,9 @@
 package org.gmetais.bleumagique
 
 import android.content.Context
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import kotlinx.coroutines.ObsoleteCoroutinesApi
 
 private const val TAG = "BLE/BlueViewModel"
